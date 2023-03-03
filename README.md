@@ -16,15 +16,12 @@ TOKEN - Your bot's token
 application_id - Your bot's ID (INTEGER not STRING)
 
 
-2.
-Start the bot by running main.py (or run.bat on windows)
+2. Start the bot by running main.py (or run.bat on windows)
 
-3.
-Navigate to milize/bot/configs and input your Discord ID (Something like this 1019070453509259315) to botowners.txt
+3. Navigate to milize/bot/configs and input your Discord ID (Something like this 1019070453509259315) to botowners.txt
 
-4.
+4. 
 Run !sync (or {prefix}sync) and wait a minute. (This is for slash commands.)
 Run !updatelist to update permissions
 
-4.
-All done! 
+5. All done! 
