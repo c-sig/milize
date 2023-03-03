@@ -2,8 +2,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-TOKEN = 'MTA3OTYzNjc5NDc1MDAxMzQ2MA.GYjKHw.65Vi2GfjEpZly7yIxS-dnyEI9f8Q8co6Q5dyww' #bot token
-application_id = 1079636794750013460 #bot application id
+TOKEN = '' #bot token
+application_id =  #bot application id
 
 intents = discord.Intents.none()
 
