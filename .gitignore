@@ -9,3 +9,4 @@ configs/config.ini
 .idea/modules.xml
 __pycache__/config.cpython-39.pyc
 __pycache__/permissions.cpython-39.pyc
+*.xml
