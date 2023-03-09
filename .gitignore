@@ -10,3 +10,4 @@ configs/config.ini
 __pycache__/config.cpython-39.pyc
 __pycache__/permissions.cpython-39.pyc
 *.xml
+commands/__pycache__/permissions.cpython-39.pyc
