@@ -1,0 +1,11 @@
+
+configs/config.ini
+.fleet/settings.json
+.idea/discord.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/milize rewrite.iml
+.idea/modules.xml
+__pycache__/config.cpython-39.pyc
+__pycache__/permissions.cpython-39.pyc
