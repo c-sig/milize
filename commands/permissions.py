@@ -1,16 +1,12 @@
-import discord
 from discord import app_commands
-from discord.ext import commands
 from config import *
 
-permissiongroup = app_commands.Group(name='permissions', description='Permission commands.')
-
+permissiongroup = app_commands.Group(name='permission', description='Permission commands.')
 
 def autocomplete(choices: list, current: str):
     if not current:
         return choices
     return [ch for ch in choices if ch.name.lower().startswith(current.lower())] or choices
-
 
 @permissiongroup.command(name="add", description='Adds a user to a permission group.')
 async def add_permission(interaction: discord.Interaction, user: discord.Member, group: str):

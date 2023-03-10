@@ -1,13 +1,6 @@
-import enum
-import os
-import json
-import discord
-import configparser
-from pathlib import Path
-from discord import app_commands
-from discord.ext import commands
 from config import *
 from commands import permissions
+from commands import boards
 
 
 config_file, config, bot, group_name, token, owners, managers, members, task_path = initializebot()
@@ -18,5 +11,6 @@ async def sync(ctx):
     print('done')
 
 bot.tree.add_command(permissions.permissiongroup)
+bot.tree.add_command(boards.boardgroup)
 
 bot.run(token)
