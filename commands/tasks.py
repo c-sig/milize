@@ -6,20 +6,24 @@ import yaml
 
 taskgroup = app_commands.Group(name='task', description='Task commands.')
 
+
 def load_database():
     with open('configs/database.yaml', 'r') as file:
         database = yaml.safe_load(file)
     return database
+
 
 def autocomplete(choices: list, current: str):
     if not current:
         return choices
     return [ch for ch in choices if ch.name.lower().startswith(current.lower())] or choices
 
+
 def loadboards():
     with open('configs/database.yaml', 'r') as file:
         boards = yaml.safe_load(file)
     return boards
+
 
 def get_user_id_for_task(taskname, boardname):
     # load the database
@@ -43,6 +47,7 @@ def get_user_id_for_task(taskname, boardname):
             break
 
     return user_id
+
 
 @taskgroup.command(name='create', description='Creates a task.')
 async def create_task(interaction: discord.Interaction, taskname: str, boardname: str):
@@ -68,12 +73,14 @@ async def create_task(interaction: discord.Interaction, taskname: str, boardname
             yaml.dump(database, file)
         await interaction.response.send_message(f'Created new board {boardname} with task {taskname}')
 
+
 @create_task.autocomplete('boardname')
 async def createautocomplete(interaction: discord, current: str):
     boards = loadboards()
     choices = [app_commands.Choice(name=name, value=name) for name in boards.keys()]
     filtered_choices = [choice for choice in choices if choice.name.startswith(current)]
     return filtered_choices
+
 
 @taskgroup.command(name='delete', description='Deletes a task.')
 async def delete_task(interaction: discord.Interaction, taskname: str, boardname: str):
@@ -101,12 +108,14 @@ async def delete_task(interaction: discord.Interaction, taskname: str, boardname
 
     await interaction.response.send_message(f'Deleted task {taskname} from board {boardname}')
 
+
 @delete_task.autocomplete('boardname')
 async def deleteautocomplete(interaction: discord, current: str):
     boards = loadboards()
     choices = [app_commands.Choice(name=name, value=name) for name in boards.keys()]
     filtered_choices = [choice for choice in choices if choice.name.startswith(current)]
     return filtered_choices
+
 
 @taskgroup.command(name='assign', description='Assigns a manager to a task')
 async def assign_task(interaction: discord.Interaction, taskname: str, boardname: str, managerid: discord.Member):
@@ -136,12 +145,14 @@ async def assign_task(interaction: discord.Interaction, taskname: str, boardname
 
     await interaction.response.send_message(f'Assigned manager {managerid} to task {taskname} in board {boardname}')
 
+
 @assign_task.autocomplete('boardname')
 async def assignautocomplete(interaction: discord.Interaction, current: str):
     boards = loadboards()
     choices = [app_commands.Choice(name=name, value=name) for name in boards.keys()]
     filtered_choices = [choice for choice in choices if choice.name.startswith(current)]
     return filtered_choices
+
 
 @taskgroup.command(name='list', description='List all tasks in specified board.')
 async def list_tasks(interaction: discord.Interaction, boardname: str):
@@ -159,15 +170,18 @@ async def list_tasks(interaction: discord.Interaction, boardname: str):
             member = interaction.guild.get_member(int(manager_id))
             if member:
                 task_list.append((task_name, member))
+        else:
+            task_list.append((task_name, None))
 
     if not task_list:
         return f"No tasks assigned in {boardname} board."
 
     task_string = f"Tasks assigned in {boardname} board:\n"
     for task_name, manager_name in task_list:
-        task_string += f"{task_name}: {manager_name}\n"
+        task_string += f"{task_name}: {manager_name}\n" if manager_name else f"{task_name}: Manager not assigned\n"
 
     await interaction.response.send_message(task_string)
+
 
 @list_tasks.autocomplete('boardname')
 async def listautocomplete(interaction: discord, current: str):
@@ -175,6 +189,7 @@ async def listautocomplete(interaction: discord, current: str):
     choices = [app_commands.Choice(name=name, value=name) for name in boards.keys()]
     filtered_choices = [choice for choice in choices if choice.name.startswith(current)]
     return filtered_choices
+
 
 @taskgroup.command(name='rename', description='Renames a task.')
 async def rename_task(interaction: discord.Interaction, taskname: str, new_taskname: str, boardname: str):
@@ -212,6 +227,7 @@ async def rename_task(interaction: discord.Interaction, taskname: str, new_taskn
         yaml.dump(database, file)
 
     await interaction.response.send_message(f'Task {taskname} has been renamed to {new_taskname} in board {boardname}.')
+
 
 @rename_task.autocomplete('boardname')
 async def renameautocomplete(interaction: discord, current: str):

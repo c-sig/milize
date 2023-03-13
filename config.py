@@ -6,8 +6,8 @@ from discord.ext import commands
 config_file = "configs/config.ini"
 config = configparser.ConfigParser()
 
-def initializebot():
 
+def initializebot():
     if not os.path.exists("configs/"):
         os.mkdir("configs")
 

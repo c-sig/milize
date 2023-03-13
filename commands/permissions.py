@@ -3,10 +3,12 @@ from config import *
 
 permissiongroup = app_commands.Group(name='permission', description='Permission commands.')
 
+
 def autocomplete(choices: list, current: str):
     if not current:
         return choices
     return [ch for ch in choices if ch.name.lower().startswith(current.lower())] or choices
+
 
 @permissiongroup.command(name="add", description='Adds a user to a permission group.')
 async def add_permission(interaction: discord.Interaction, user: discord.Member, group: str):
@@ -126,6 +128,8 @@ async def list_permission(interaction: discord.Interaction, group: str):
 
     member_list_str = '\n'.join(member_list)
     await interaction.response.send_message(f'Users in {group}:\n{member_list_str}')
+
+
 @list_permission.autocomplete('group')
 async def listautocomplete(interaction: discord, current: str):
     choices = [app_commands.Choice(name=name, value=name) for name in ['owners', 'managers', 'members']]
