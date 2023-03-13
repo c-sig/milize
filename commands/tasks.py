@@ -1,3 +1,4 @@
+import discord
 from discord import app_commands
 from config import *
 import os
@@ -108,7 +109,7 @@ async def deleteautocomplete(interaction: discord, current: str):
     return filtered_choices
 
 @taskgroup.command(name='assign', description='Assigns a manager to a task')
-async def assign_task(interaction: discord.Interaction, taskname: str, boardname: str, userid: discord.Member):
+async def assign_task(interaction: discord.Interaction, taskname: str, boardname: str, managerid: discord.Member):
     if not os.path.exists('configs'):
         await interaction.response.send_message('No database found.')
         return
@@ -128,58 +129,45 @@ async def assign_task(interaction: discord.Interaction, taskname: str, boardname
         await interaction.response.send_message(f'Task {taskname} does not exist in board {boardname}.')
         return
 
-    # assign the user ID to the task
-    database[boardname][taskname][userid.id] = True
+    # assign the manager ID to the task
+    database[boardname][taskname]['manager_assigned'] = managerid.id
     with open('configs/database.yaml', 'w') as file:
         yaml.dump(database, file)
 
-    await interaction.response.send_message(f'Assigned user {userid} to task {taskname} in board {boardname}')
+    await interaction.response.send_message(f'Assigned manager {managerid} to task {taskname} in board {boardname}')
 
 @assign_task.autocomplete('boardname')
-async def assignautocomplete(interaction: discord, current: str):
+async def assignautocomplete(interaction: discord.Interaction, current: str):
     boards = loadboards()
     choices = [app_commands.Choice(name=name, value=name) for name in boards.keys()]
     filtered_choices = [choice for choice in choices if choice.name.startswith(current)]
     return filtered_choices
 
-@taskgroup.command(name='list', description='Lists available tasks in a board.')
+@taskgroup.command(name='list', description='List all tasks in specified board.')
 async def list_tasks(interaction: discord.Interaction, boardname: str):
-    if not os.path.exists('configs'):
-        await interaction.response.send_message('No database found. Aborting task listing')
-        return
+    with open('configs/database.yaml', 'r') as f:
+        data = yaml.load(f, Loader=yaml.FullLoader)
 
-    # check if database.yaml exists
-    if not os.path.exists('configs/database.yaml'):
-        await interaction.response.send_message('No database found. Aborting task listing')
-        return
+    if boardname not in data:
+        return f"No such board: {boardname}"
 
-    # load the database
-    with open('configs/database.yaml', 'r') as file:
-        database = yaml.safe_load(file)
-        if database is None:
-            database = {}
+    tasks = data[boardname]
+    task_list = []
+    for task_name, task_data in tasks.items():
+        manager_id = task_data.get('manager_assigned')
+        if manager_id:
+            member = interaction.guild.get_member(int(manager_id))
+            if member:
+                task_list.append((task_name, member))
 
-    # check if the board exists
-    if boardname not in database:
-        await interaction.response.send_message(f'Board {boardname} does not exist.')
-        return
+    if not task_list:
+        return f"No tasks assigned in {boardname} board."
 
-    tasks = database[boardname]
-    if len(tasks) == 0:
-        await interaction.response.send_message(f'No tasks found in board {boardname}')
-        return
+    task_string = f"Tasks assigned in {boardname} board:\n"
+    for task_name, manager_name in task_list:
+        task_string += f"{task_name}: {manager_name}\n"
 
-    message = f'Tasks in board {boardname}:\n'
-    for taskname, users in tasks.items():
-        message += f'- {taskname}\n'
-        if len(users) > 0:
-            message += '  Assigned users:\n'
-            for userid in users:
-                assignees = await interaction.guild.fetch_member(int(userid))
-                message += f'  - {assignees}\n'
-        else:
-            message += '  No users assigned\n'
-    await interaction.response.send_message(message)
+    await interaction.response.send_message(task_string)
 
 @list_tasks.autocomplete('boardname')
 async def listautocomplete(interaction: discord, current: str):

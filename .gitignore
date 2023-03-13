@@ -1,0 +1,15 @@
+
+.idea/discord.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/milize.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+__pycache__/config.cpython-39.pyc
+commands/__pycache__/boards.cpython-39.pyc
+commands/__pycache__/jobs.cpython-39.pyc
+commands/__pycache__/permissions.cpython-39.pyc
+commands/__pycache__/tasks.cpython-39.pyc
+configs/database.yaml
+configs/config.ini
