@@ -50,11 +50,3 @@ def initializebot():
     intents = discord.Intents.all()
     bot = commands.Bot(command_prefix=commands.when_mentioned_or(prefix), intents=intents, id=app_id, help_command=None)
     return prefix, config_file, config, bot, group_name, token, owners, managers, members
-
-
-def readpermissions():
-    owners = config.get('settings', 'owner_id').split(",")
-    managers = config.get('settings', 'manager_id').split(",")
-    members = config.get('settings', 'member_id').split(",")
-
-    return owners, managers, members

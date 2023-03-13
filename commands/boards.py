@@ -5,6 +5,42 @@ from config import *
 boardgroup = app_commands.Group(name='board', description='Board commands.')
 CONFIGS_FOLDER = 'configs'
 database_path = os.path.join(CONFIGS_FOLDER, 'database.yaml')
+owners, managers, members, *_ = initializebot()
+group_configs = {
+    'owners': 'owner_id',
+    'managers': 'manager_id',
+    'members': 'member_id',
+}
+
+
+def update_config():
+    group_configs = {
+        'owners': 'owner_id',
+        'managers': 'manager_id',
+        'members': 'member_id',
+    }
+    owners_config = config.get('settings', group_configs['owners'])
+    owners_ids = [id.strip() for id in owners_config.split(',')]
+    managers_config = config.get('settings', group_configs['managers'])
+    managers_ids = [id.strip() for id in managers_config.split(',')]
+    members_config = config.get('settings', group_configs['members'])
+    members_ids = [id.strip() for id in members_config.split(',')]
+
+    # Update the global variables used in your code
+    global owners, managers, members
+    owners = [int(id) for id in owners_ids]
+    managers = [int(id) for id in managers_ids]
+    members = [int(id) for id in members_ids]
+
+
+def check_permissions(user_id, allowed_groups):
+    update_config()
+    for group in allowed_groups:
+        group_config = config.get('settings', group_configs[group])
+        group_ids = [id.strip() for id in group_config.split(',')]
+        if str(user_id) in group_ids:
+            return True
+    return False
 
 
 def loadboards():
@@ -21,6 +57,10 @@ def autocomplete(choices: list, current: str):
 
 @boardgroup.command(name='create', description='Creates a board.')
 async def create_board(interaction: discord.Interaction, boardname: str):
+    allowed_groups = ['owners', 'managers']
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     # Load board list from database
     if os.path.exists(database_path) and os.path.getsize(database_path) > 0:
         boards = loadboards()
@@ -42,6 +82,10 @@ async def create_board(interaction: discord.Interaction, boardname: str):
 
 @boardgroup.command(name='delete', description='Deletes an existing board')
 async def delete_board(interaction: discord.Interaction, boardname: str):
+    allowed_groups = ['owners', 'managers']
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     # Load board list from database
     boards = loadboards()
 
@@ -68,6 +112,10 @@ async def deleteautocomplete(interaction: discord, current: str):
 
 @boardgroup.command(name='rename', description='Renames an existing board')
 async def rename_board(interaction: discord.Interaction, oldname: str, newname: str):
+    allowed_groups = ['owners', 'managers']
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     # Load board list from database
     boards = loadboards()
 
@@ -100,6 +148,10 @@ async def renameautocomplete(interaction: discord, current: str):
 
 @boardgroup.command(name='list', description='Lists all available boards')
 async def list_board(interaction: discord.Interaction):
+    allowed_groups = ['owners', 'managers']
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     # Load board list from database
     boards = loadboards()
 

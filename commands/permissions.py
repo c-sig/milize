@@ -1,5 +1,8 @@
 from discord import app_commands
 from config import *
+import discord
+import yaml
+from configparser import ConfigParser
 
 permissiongroup = app_commands.Group(name='permission', description='Permission commands.')
 
@@ -67,6 +70,12 @@ async def remove_permission(interaction: discord.Interaction, user: discord.Memb
         'members': 'member_id',
     }
 
+    owners_config = config.get('settings', group_configs['owners'])
+    owners_ids = [id.strip() for id in owners_config.split(',')]
+    if str(interaction.user.id) not in owners_ids:
+        await interaction.response.send_message(f'You are not authorized to perform this command.')
+        return
+
     if group not in group_configs:
         await interaction.response.send_message(f'{group} is not a valid permission group!')
         return
@@ -103,6 +112,12 @@ async def list_permission(interaction: discord.Interaction, group: str):
         'managers': 'manager_id',
         'members': 'member_id',
     }
+
+    owners_config = config.get('settings', group_configs['owners'])
+    owners_ids = [id.strip() for id in owners_config.split(',')]
+    if str(interaction.user.id) not in owners_ids:
+        await interaction.response.send_message(f'You are not authorized to perform this command.')
+        return
 
     if group not in group_configs:
         await interaction.response.send_message(f'{group} is not a valid permission group!')

@@ -6,6 +6,43 @@ import yaml
 
 taskgroup = app_commands.Group(name='task', description='Task commands.')
 
+owners, managers, members, *_ = initializebot()
+group_configs = {
+    'owners': 'owner_id',
+    'managers': 'manager_id',
+    'members': 'member_id',
+}
+
+
+def update_config():
+    group_configs = {
+        'owners': 'owner_id',
+        'managers': 'manager_id',
+        'members': 'member_id',
+    }
+    owners_config = config.get('settings', group_configs['owners'])
+    owners_ids = [id.strip() for id in owners_config.split(',')]
+    managers_config = config.get('settings', group_configs['managers'])
+    managers_ids = [id.strip() for id in managers_config.split(',')]
+    members_config = config.get('settings', group_configs['members'])
+    members_ids = [id.strip() for id in members_config.split(',')]
+
+    # Update the global variables used in your code
+    global owners, managers, members
+    owners = [int(id) for id in owners_ids]
+    managers = [int(id) for id in managers_ids]
+    members = [int(id) for id in members_ids]
+
+
+def check_permissions(user_id, allowed_groups):
+    update_config()
+    for group in allowed_groups:
+        group_config = config.get('settings', group_configs[group])
+        group_ids = [id.strip() for id in group_config.split(',')]
+        if str(user_id) in group_ids:
+            return True
+    return False
+
 
 def load_database():
     with open('configs/database.yaml', 'r') as file:
@@ -51,6 +88,10 @@ def get_user_id_for_task(taskname, boardname):
 
 @taskgroup.command(name='create', description='Creates a task.')
 async def create_task(interaction: discord.Interaction, taskname: str, boardname: str):
+    allowed_groups = ['owners', 'managers']  # Only owners and managers can run this command
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     if not os.path.exists('configs'):
         os.mkdir('configs')
 
@@ -84,6 +125,10 @@ async def createautocomplete(interaction: discord, current: str):
 
 @taskgroup.command(name='delete', description='Deletes a task.')
 async def delete_task(interaction: discord.Interaction, taskname: str, boardname: str):
+    allowed_groups = ['owners', 'managers']  # Only owners and managers can run this command
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     if not os.path.exists('configs'):
         await interaction.response.send_message('No database found.')
         return
@@ -119,6 +164,10 @@ async def deleteautocomplete(interaction: discord, current: str):
 
 @taskgroup.command(name='assign', description='Assigns a manager to a task')
 async def assign_task(interaction: discord.Interaction, taskname: str, boardname: str, managerid: discord.Member):
+    allowed_groups = ['owners', 'managers']  # Only owners and managers can run this command
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     if not os.path.exists('configs'):
         await interaction.response.send_message('No database found.')
         return
@@ -156,6 +205,10 @@ async def assignautocomplete(interaction: discord.Interaction, current: str):
 
 @taskgroup.command(name='list', description='List all tasks in specified board.')
 async def list_tasks(interaction: discord.Interaction, boardname: str):
+    allowed_groups = ['owners', 'managers', 'members']  # Only owners and managers can run this command
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     with open('configs/database.yaml', 'r') as f:
         data = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -193,6 +246,10 @@ async def listautocomplete(interaction: discord, current: str):
 
 @taskgroup.command(name='rename', description='Renames a task.')
 async def rename_task(interaction: discord.Interaction, taskname: str, new_taskname: str, boardname: str):
+    allowed_groups = ['owners', 'managers']  # Only owners and managers can run this command
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     # check if configs folder exists
     if not os.path.exists('configs'):
         await interaction.response.send_message('No database found.')

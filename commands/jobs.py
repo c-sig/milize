@@ -9,6 +9,43 @@ database_path = os.path.join(CONFIGS_FOLDER, 'database.yaml')
 
 jobtypes = ['Translator', ' Proofreader', ' Typesetter', ' Cleaner', ' Redrawer', ' Quality Checker']
 
+owners, managers, members, *_ = initializebot()
+group_configs = {
+    'owners': 'owner_id',
+    'managers': 'manager_id',
+    'members': 'member_id',
+}
+
+
+def update_config():
+    group_configs = {
+        'owners': 'owner_id',
+        'managers': 'manager_id',
+        'members': 'member_id',
+    }
+    owners_config = config.get('settings', group_configs['owners'])
+    owners_ids = [id.strip() for id in owners_config.split(',')]
+    managers_config = config.get('settings', group_configs['managers'])
+    managers_ids = [id.strip() for id in managers_config.split(',')]
+    members_config = config.get('settings', group_configs['members'])
+    members_ids = [id.strip() for id in members_config.split(',')]
+
+    # Update the global variables used in your code
+    global owners, managers, members
+    owners = [int(id) for id in owners_ids]
+    managers = [int(id) for id in managers_ids]
+    members = [int(id) for id in members_ids]
+
+
+def check_permissions(user_id, allowed_groups):
+    update_config()
+    for group in allowed_groups:
+        group_config = config.get('settings', group_configs[group])
+        group_ids = [id.strip() for id in group_config.split(',')]
+        if str(user_id) in group_ids:
+            return True
+    return False
+
 
 def loaddatabase():
     with open(database_path) as f:
@@ -30,6 +67,10 @@ def autocomplete(choices: list, current: str):
 
 @jobgroup.command(name='claim', description='Claim a job.')
 async def claim_job(interaction: discord.Interaction, boardname: str, taskname: str, jobtype: str):
+    allowed_groups = ['owners', 'managers', 'members']
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     data = loaddatabase()
     if boardname not in data:
         await interaction.response.send_message(f"Board '{boardname}' not found")
@@ -73,6 +114,10 @@ async def claimjobautocomplete(interaction: discord.Interaction, current: str):
 
 @jobgroup.command(name='unclaim', description='Unclaims a job')
 async def unclaim_job(interaction: discord.Interaction, boardname: str, taskname: str, jobtype: str):
+    allowed_groups = ['owners', 'managers', 'members']
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     data = loaddatabase()
     if boardname not in data:
         await interaction.response.send_message(f"Board '{boardname}' not found")
@@ -109,6 +154,10 @@ async def unclaimjobautocomplete(interaction: discord.Interaction, current: str)
 
 @jobgroup.command(name='unassign', description='Unassigns a user from a job.')
 async def unassign_job(interaction: discord.Interaction, boardname: str, taskname: str, jobtype: str):
+    allowed_groups = ['owners', 'managers']
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     data = loaddatabase()
 
     # Check if the board and task exist
@@ -160,6 +209,10 @@ async def unassignjobautocomplete(interaction: discord.Interaction, current: str
 
 @jobgroup.command(name='create', description='Creates a job.')
 async def create_job(interaction: discord.Interaction, boardname: str, taskname: str, jobtype: str):
+    allowed_groups = ['owners', 'managers']
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     data = loaddatabase()
 
     # Check if the board and task exist
@@ -198,6 +251,10 @@ async def createjobautocomplete(interaction: discord.Interaction, current: str):
 @jobgroup.command(name='assign', description='Assigns a user to a job.')
 async def assign_job(interaction: discord.Interaction, boardname: str, taskname: str, jobtype: str,
                      user_assigned: discord.Member):
+    allowed_groups = ['owners', 'managers']
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     data = loaddatabase()
 
     # Check if the board and task exist
@@ -242,6 +299,10 @@ async def assignjobautocomplete(interaction: discord.Interaction, current: str):
 
 @jobgroup.command(name='update', description='Updates job status.')
 async def update_job(interaction: discord.Interaction, boardname: str, taskname: str, jobtype: str, status: str):
+    allowed_groups = ['owners', 'managers', 'members']
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     data = loaddatabase()
 
     # Check if the board and task exist
@@ -291,6 +352,10 @@ async def updatejobautocomplete(interaction: discord.Interaction, current: str):
 
 @jobgroup.command(name='list', description='Lists all jobs in a task.')
 async def list_job(interaction: discord.Interaction, boardname: str, taskname: str):
+    allowed_groups = ['owners', 'managers', 'members']
+    if not check_permissions(interaction.user.id, allowed_groups):
+        await interaction.response.send_message(f'You do not have the necessary permissions for this command')
+        return
     data = loaddatabase()
 
     # Check if the board and task exist
